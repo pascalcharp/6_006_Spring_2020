@@ -7,6 +7,7 @@ class _Noeud:
         self.next = None
         self.prev = None
 
+
 class ListeDoublementChaineeIterateur:
     def __init__(self, premier, dernier):
         self._courant = premier
@@ -17,6 +18,7 @@ class ListeDoublementChaineeIterateur:
         if self._courant == self._dernier:
             raise StopIteration
         return self._courant.cle
+
 
 class ListeDoublementChainee(Sequence):
     def __init__(self, elements=None):
@@ -46,7 +48,6 @@ class ListeDoublementChainee(Sequence):
             if s.cle == item:
                 return True
         return False
-
 
     def __str__(self):
         res = "["
