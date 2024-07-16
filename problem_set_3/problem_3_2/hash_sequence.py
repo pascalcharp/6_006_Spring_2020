@@ -23,7 +23,6 @@ class HashSequence(Sequence):
         result += "]"
         return result
 
-
     def lire_premier(self):
         raise NotImplementedError
 
@@ -70,6 +69,7 @@ class HashSequence(Sequence):
             self.hash_map.insert(i - 1, x)
         self.cardinal -= 1
         return retval
+
 
 if __name__ == "__main__":
     mySequence = HashSequence(lambda x: x, [10, 20, 30, 40, 50])
