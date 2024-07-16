@@ -1,4 +1,5 @@
 import unittest
+from lib.ListeDoublementChaineeAux import ListeDoublementChaineeAux
 
 
 class ImageNode:
@@ -20,10 +21,16 @@ class ImageNode:
 
 class PhotoAlbum:
     def __init__(self):
-        self.images = []
+        self.images = ListeDoublementChaineeAux()
         self.index = []
         self.cardinal = 0
         assert self._invariant()
+
+    def __repr__(self):
+        result = f"Cardinal = {self.cardinal}\n"
+        result += f"Images = {self.images.__str__()}\n"
+        result += f"Index = {self.index}\n"
+        return result
 
     def _invariant(self):
         if len(self.images) != self.cardinal:
@@ -50,6 +57,8 @@ class PhotoAlbum:
             return mid
 
     def search_id(self, n):
+        if len(self.index) == 0:
+            return 0
         if self.index[0] > n:
             return -1
         return self._search_id_in(n, 0, self.cardinal - 1)
@@ -58,9 +67,29 @@ class PhotoAlbum:
         return self.cardinal
 
     def import_image(self, id, image):
-        new_node = ImageNode(id, image)
+        node_ref = self.images.aux_insert_last(id, image)
+        idx = self.search_id(id)
+        if idx < len(self.index) and self.index[idx] == id:
+            raise KeyError(f"Identificateur {id} déjà présent dans l'album")
+        self.index.insert(idx + 1, node_ref)
+        self.cardinal += 1
 
+    def display(self):
+        print(self.images.keys())
+
+    def move_below(self, id_a, id_b):
+        node_x = self.index[self.search_id(id_a)]
+        node_y = self.index[self.search_id(id_b)]
+        self.images.aux_insert_node(node_y, self.images.aux_remove_node(node_x))
 
 
 if __name__ == "__main__":
     a = PhotoAlbum()
+    a.import_image(42, None)
+    a.import_image(12, None)
+    a.import_image(99, None)
+    a.import_image(25, None)
+    a.import_image(1, None)
+    a.display()
+    a.move_below(25, 12)
+    a.display()

@@ -21,6 +21,18 @@ class Node:
         return self.key == other
 
 
+class ListeDoublementChaineeAuxIterateur:
+    def __init__(self, premier, dernier):
+        self._courant = premier
+        self._dernier = dernier
+
+    def __next__(self):
+        self._courant = self._courant.next
+        if self._courant == self._dernier:
+            raise StopIteration
+        return self._courant
+
+
 class ListeDoublementChaineeAux:
     def __init__(self):
         self.first = Node(None, None)
@@ -30,12 +42,13 @@ class ListeDoublementChaineeAux:
         self.cardinal = 0
         assert self.invariant()
 
+    def __iter__(self):
+        return ListeDoublementChaineeAuxIterateur(self.first, self.last)
+
     def __len__(self):
         return self.cardinal
 
     def invariant(self):
-        if self.cardinal == 0:
-            return self.first is None and self.last is None
         p = self.first.next
         for _ in range(self.cardinal):
             p = p.next
@@ -65,3 +78,26 @@ class ListeDoublementChaineeAux:
         self.cardinal += 1
         assert self.invariant()
         return new_node
+
+    def aux_insert_node(self, node, new_node):
+        node.prev.next = new_node
+        new_node.prev = node.prev
+        node.prev = new_node
+        new_node.next = node
+        self.cardinal += 1
+        assert self.invariant()
+
+    def aux_remove_node(self, node):
+        rem_node = node
+        node.prev.next = node.next
+        node.next.prev = node.prev
+        self.cardinal -= 1
+        assert self.invariant()
+        return node
+
+    def keys(self):
+        result = []
+        for n in self:
+            result.append(n.key)
+        return result
+
