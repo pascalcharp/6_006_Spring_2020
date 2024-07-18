@@ -19,6 +19,7 @@ def radix_sort(A, radix):
         curr_divisor *= radix
     return result
 
+
 if __name__ == '__main__':
     A = [4, 1, 8, 2, 900, 432, 1, 923, 1796, 2746, 9325, 24]
     print(radix_sort(A, 10))

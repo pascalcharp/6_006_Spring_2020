@@ -8,35 +8,12 @@ class _Node:
         self.height = 0
 
 
-def height(root):
-    if root is None:
-        return -1
-    return root.height
-
-
-def update_height(root):
-    if root is None:
-        return
-    root.height = 1 + max(height(root.left), height(root.right))
-
-
-def subtree_minimum(root):
-    while root.left is not None:
-        root = root.left
-    return root
-
-
-def subtree_maximum(root):
-    while root.right is not None:
-        root = root.right
-    return root
-
-
 class ArbreBinaireAVLIterateur:
     def __init__(self, arbre):
         self.current = None
-        self.minimum = arbre.minimum()
-        self.maximum = arbre.maximum()
+        self.arbre = arbre
+        self.minimum = arbre.subtree_minimum(arbre.root)
+        self.maximum = arbre.subtree_maximum(arbre.root)
 
     def __next__(self):
         if self.current == self.maximum:
@@ -48,62 +25,8 @@ class ArbreBinaireAVLIterateur:
                 self.current = self.current.parent
             self.current = self.current.parent
         else:
-            self.current = subtree_minimum(self.current.right)
+            self.current = self.arbre.subtree_minimum(self.current.right)
         return self.current.key, self.current.val
-
-
-def subtree_factor(root):
-    if root is None:
-        return 0
-    return height(root.right) - height(root.left)
-
-
-def is_skewed_right(root):
-    return height(root.right) > height(root.left)
-
-
-def is_skewed_left(root):
-    return height(root.left) > height(root.right)
-
-
-def rotate_right(root):
-    new_root = root.left
-    root.left = new_root.right
-    if new_root.right is not None:
-        new_root.right.parent = root
-    new_root.right = root
-    root.parent = new_root
-    root = new_root
-    update_height(root.right)
-    return root
-
-
-def rotate_left(root):
-    new_root = root.right
-    root.right = new_root.left
-    if new_root.left is not None:
-        new_root.left.parent = root
-    new_root.left = root
-    root.parent = new_root
-    root = new_root
-    update_height(root.left)
-    return root
-
-
-def subtree_balance(root):
-    factor = subtree_factor(root)
-    if factor < -1:
-        if is_skewed_right(root.left):
-            root.left = rotate_left(root.left)
-            root.left.parent = root
-        root = rotate_right(root)
-    elif factor > 1:
-        if is_skewed_left(root.right):
-            root.right = rotate_right(root.right)
-            root.right.parent = root
-        root = rotate_left(root)
-    update_height(root)
-    return root
 
 
 class ArbreBinaireAVL:
@@ -111,9 +34,11 @@ class ArbreBinaireAVL:
         self.root = None
         self.cardinal = 0
         if pairs is None:
-            self.pairs = []
+            pairs = []
+        self.pairs = pairs
         for k, v in pairs:
             self.insert(k, v)
+        assert self._invariant()
 
     def __iter__(self):
         return ArbreBinaireAVLIterateur(self)
@@ -123,6 +48,7 @@ class ArbreBinaireAVL:
 
     def insert(self, key, val=None):
         self.root = self.subtree_insert(self.root, key, val)
+        self.root.parent = None
         self.cardinal += 1
         assert self._invariant()
 
@@ -135,10 +61,80 @@ class ArbreBinaireAVL:
         return self.subtree_read(self.root, key)
 
     def minimum(self):
-        return subtree_minimum(self.root)
+        node = self.subtree_minimum(self.root)
+        return node.key, node.val
 
     def maximum(self):
-        return subtree_maximum(self.root)
+        node = self.subtree_maximum(self.root)
+        return node.key, node.val
+
+    def subtree_height(self, root):
+        if root is None:
+            return -1
+        return root.height
+
+    def subtree_factor(self, root):
+        if root is None:
+            return 0
+        return self.subtree_height(root.right) - self.subtree_height(root.left)
+
+    def subtree_is_skewed_right(self, root):
+        return self.subtree_height(root.right) > self.subtree_height(root.left)
+
+    def subtree_is_skewed_left(self, root):
+        return self.subtree_height(root.left) > self.subtree_height(root.right)
+
+    def subtree_update_height(self, root):
+        if root is None:
+            return
+        root.height = 1 + max(self.subtree_height(root.left), self.subtree_height(root.right))
+
+    def subtree_minimum(self, root):
+        while root.left is not None:
+            root = root.left
+        return root
+
+    def subtree_maximum(self, root):
+        while root.right is not None:
+            root = root.right
+        return root
+
+    def subtree_rotate_right(self, root):
+        new_root = root.left
+        root.left = new_root.right
+        if new_root.right is not None:
+            new_root.right.parent = root
+        new_root.right = root
+        root.parent = new_root
+        root = new_root
+        self.subtree_update_height(root.right)
+        return root
+
+    def subtree_rotate_left(self, root):
+        new_root = root.right
+        root.right = new_root.left
+        if new_root.left is not None:
+            new_root.left.parent = root
+        new_root.left = root
+        root.parent = new_root
+        root = new_root
+        self.subtree_update_height(root.left)
+        return root
+
+    def subtree_balance(self, root):
+        factor = self.subtree_factor(root)
+        if factor < -1:
+            if self.subtree_is_skewed_right(root.left):
+                root.left = self.subtree_rotate_left(root.left)
+                root.left.parent = root
+            root = self.subtree_rotate_right(root)
+        elif factor > 1:
+            if self.subtree_is_skewed_left(root.right):
+                root.right = self.subtree_rotate_right(root.right)
+                root.right.parent = root
+            root = self.subtree_rotate_left(root)
+        self.subtree_update_height(root)
+        return root
 
     def subtree_insert(self, root, key, val):
         if root is None:
@@ -151,7 +147,7 @@ class ArbreBinaireAVL:
             root.right.parent = root
         else:
             raise KeyError("insertion: Duplicata de clé")
-        root = subtree_balance(root)
+        root = self.subtree_balance(root)
         return root
 
     def subtree_delete(self, root, key):
@@ -170,20 +166,20 @@ class ArbreBinaireAVL:
                 if root.right is None:
                     root = None
                 else:
-                    target = subtree_minimum(root.right)
+                    target = self.subtree_minimum(root.right)
                     root.key = target.key
                     root.val = target.val
                     root.right = self.subtree_delete(root.right, target.key)
                     if root.right is not None:
                         root.right.parent = root
             else:
-                target = subtree_maximum(root.left)
+                target = self.subtree_maximum(root.left)
                 root.key = target.key
                 root.val = target.val
                 root.left = self.subtree_delete(root.left, target.key)
                 if root.left is not None:
                     root.left.parent = root
-        root = subtree_balance(root)
+        root = self.subtree_balance(root)
         return root
 
     def subtree_read(self, root, key):
