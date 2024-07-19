@@ -1,10 +1,30 @@
-from lib.ArbreBinaireAVL import ArbreBinaireAVL, _Node
+from lib.ArbreBinaireAVL import ArbreBinaireAVL
 
 
-class AuctionTreeNode:
-    def __init__(self, bid):
+class AuctionBidKey:
+    def __init__(self, id_number, bid):
         self.bid = bid
-        self.sum = bid
+        self.id_number = id_number
+
+    def __lt__(self, other):
+        if self.bid == other.bid:
+            return self.id_number < other.id_number
+        return self.bid < other.bid
+
+    def __gt__(self, other):
+        return other < self
+
+    def __eq__(self, other):
+        return self.bid == other.bid and self.id_number == other.id_number
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __ge__(self, other):
+        return not self.__lt__(other)
+
+    def __le__(self, other):
+        return not self.__gt__(other)
 
 
 class AuctionTree(ArbreBinaireAVL):
@@ -13,30 +33,32 @@ class AuctionTree(ArbreBinaireAVL):
         self.k_number = k_max
         if bidders is None:
             bidders = []
-        for k, b in bidders:
-            self.insert(k, b)
+        for id, bid in bidders:
+            self.insert(id, bid)
 
-    def insert(self, key, val=0):
+    def insert(self, id, bid=None):
+        bid_key = AuctionBidKey(id, bid)
+        bid_value = bid
         if self.cardinal < self.k_number:
-            self.root = self.subtree_insert(self.root, key, AuctionTreeNode(val))
+            self.root = self.subtree_insert(self.root, bid_key, bid_value)
             self.cardinal += 1
         else:
             min_key, min_node = self.minimum()
-            if val > min_node.bid:
+            if bid_key.bid > min_key.bid:
                 self.delete(min_key)
-                self.insert(key, val)
+                self.insert(id, bid)
 
     def sum(self):
-        return self.root.val.sum
+        return self.root.val
 
     def subtree_sum(self, root):
         if root is None:
             return 0
-        return root.val.sum
+        return root.val
 
     def subtree_update_sum(self, root):
         if root is not None:
-            root.val.sum = root.val.bid + self.subtree_sum(root.left) + self.subtree_sum(root.right)
+            root.val = root.key.bid + self.subtree_sum(root.left) + self.subtree_sum(root.right)
         return root
 
     def subtree_insert(self, root, key, node_info):
