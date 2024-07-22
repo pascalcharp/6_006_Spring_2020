@@ -15,10 +15,10 @@ class ReceiverStats:
         return len(self.stats)
 
     def calculate_average(self):
-        sum = 0.0
+        total = 0.0
         for _, p in self.stats:
-            sum += p
-        return sum / len(self.stats)
+            total += p
+        return total / len(self.stats)
 
     def update_average(self):
         if len(self.stats) == 0:

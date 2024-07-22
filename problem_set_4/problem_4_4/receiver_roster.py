@@ -1,6 +1,7 @@
 from lib.ArbreBinaireAVL import ArbreBinaireAVL
 from receiver_stats import ReceiverStats
 
+
 class ReceiverKey:
     def __init__(self, id, avg):
         self.id = id
@@ -41,7 +42,7 @@ class ReceiverRoster:
         pass
 
     def clear(self, game, receiver):
-        pass
+        self.rankings.lire(receiver).remove_game(game)
 
     def ranked_receiver(self, rank):
         pass
