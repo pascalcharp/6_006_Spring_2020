@@ -39,7 +39,9 @@ class ReceiverRoster:
         self.rankings.insert(receiver, receiver_stats)
 
     def record(self, game, receiver, points):
-        pass
+        stats = self.rankings.delete(receiver)
+        stats.update_points_for_game(game, points)
+        self.rankings.insert(receiver, stats)
 
     def clear(self, game, receiver):
         self.rankings.lire(receiver).remove_game(game)
